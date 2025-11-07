@@ -12,12 +12,11 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[]
-  addToCart: (item: Omit<CartItem, 'quantity'>) => void
-  removeFromCart: (id: number) => void
+  addItem: (item: Omit<CartItem, 'quantity'>) => void
+  removeItem: (id: number) => void
   updateQuantity: (id: number, quantity: number) => void
   clearCart: () => void
-  totalItems: number
-  totalPrice: number
+  total: number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -25,7 +24,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
-  const addToCart = (item: Omit<CartItem, 'quantity'>) => {
+  const addItem = (item: Omit<CartItem, 'quantity'>) => {
     setItems((prevItems) => {
       const existingItem = prevItems.find((i) => i.id === item.id)
       if (existingItem) {
@@ -37,13 +36,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const removeFromCart = (id: number) => {
+  const removeItem = (id: number) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id))
   }
 
   const updateQuantity = (id: number, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(id)
+      removeItem(id)
       return
     }
     setItems((prevItems) =>
@@ -57,22 +56,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([])
   }
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   return (
     <CartContext.Provider
       value={{
         items,
-        addToCart,
-        removeFromCart,
+        addItem,
+        removeItem,
         updateQuantity,
         clearCart,
-        totalItems,
-        totalPrice,
+        total,
       }}
     >
       {children}
